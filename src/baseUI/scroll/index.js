@@ -1,7 +1,11 @@
-import React, {forwardRef, useState, useEffect, useRef, useImperativeHandle} from 'react'
+import React, {forwardRef, useState, useEffect, useRef, useImperativeHandle, useMemo} from 'react'
 import PropTypes from 'prop-types'
 import BScroll from 'better-scroll'
-import {ScrollContainer} from './style'
+import {ScrollContainer, PullUpLoading, PullDownLoading} from './style'
+import LoadingV2 from '../../components/loading-v2'
+import Loading from '../../components/loading'
+import {debounce} from "../../util";
+
 
 const Scroll = forwardRef((props, ref) => {
   // better 实例对象
@@ -22,6 +26,14 @@ const Scroll = forwardRef((props, ref) => {
     bounceTop,
     bounceBottom
   } = props;
+
+  let pullUpDebounce = useMemo(() => {
+    return debounce(pullUp, 300);
+  }, [pullUp]);
+
+  let pullDownDebounce = useMemo(() => {
+    return debounce(pullDown,300);
+  }, [pullDown]);
 
   useEffect(() => {
     const scroll = new BScroll(scrollContainerRef.current, {
@@ -62,7 +74,7 @@ const Scroll = forwardRef((props, ref) => {
     if(!bScroll || !pullUp) return;
     bScroll.on('scrollEnd', () => {
       if(bScroll.y < bScroll.maxScrollY + 100) {
-        pullUp();
+        pullUpDebounce();
       }
     });
     return () => {
@@ -76,7 +88,7 @@ const Scroll = forwardRef((props, ref) => {
     bScroll.on('touchEnd', (pos) => {
       // 判断下拉动作
       if(pos.y > 50) {
-        pullDown();
+        pullDownDebounce();
       }
     });
     return () => {
@@ -98,11 +110,18 @@ const Scroll = forwardRef((props, ref) => {
       if(bScroll) return bScroll;
     }
 
-  }))
+  }));
+
+  const PullUpDisplayStyle = pullUpLoading ? {display: ''} : {display: 'none'};
+  const PullDownDisplayStyle = pullDownLoading ? {display: ''} : {display: 'none'};
+
+  console.log(pullUpLoading, pullDownLoading, PullUpDisplayStyle, PullDownDisplayStyle);
 
   return (
     <ScrollContainer ref={scrollContainerRef}>
       {props.children}
+      <PullUpLoading style={PullUpDisplayStyle}><Loading /></PullUpLoading>
+      <PullDownLoading style={PullDownDisplayStyle}><LoadingV2 /></PullDownLoading>
     </ScrollContainer>
   )
 
@@ -121,16 +140,16 @@ Scroll.propTypes = {
   pullUpLoading: PropTypes.bool, // 是否显示上拉Loading
   pullDownLoading: PropTypes.bool,// 是否显示下拉Loading
   bounceTop: PropTypes.bool,     // 是否支持向上吸顶
-  bounceBottom: PropTypes.bool,  // 是否支持向下吸顶  
-}
+  bounceBottom: PropTypes.bool,  // 是否支持向下吸顶
+};
 
 Scroll.defaultProps = {
   direction: 'vertical',
   click: true,
   refresh: true,
   onScroll: null,
-  pullUpLoading: true,
-  pullDownLoading: true,
+  pullUpLoading: false,
+  pullDownLoading: false,
   pullUp: null,
   pullDown: null,
   bounceTop: true,

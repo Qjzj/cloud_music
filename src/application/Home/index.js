@@ -13,9 +13,9 @@ function Home (props) {
   return (
     <div>
       <Top>
-        <span className="iconfont icon-musiclist"></span>
+        <span className="iconfont icon-musiclist" />
         <span className="title">WebApp</span>
-        <span className="iconfont icon-search"></span>
+        <span className="iconfont icon-search" />
       </Top>
       <Tab>
         <NavLink to='/recommend' activeClassName="selected">

@@ -13,7 +13,7 @@ export const SliderContainer = styled.div`
     top: -300px;
     width: 100%;
     height: 400px;
-    background: ${style['theme-color']}
+    background: ${style['theme-color']};
   }
   .slider-container {
     position: relative;
