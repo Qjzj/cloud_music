@@ -12,7 +12,7 @@ const defaultState = fromJS({
   pullUpLoading: false,
   pullDownLoading: false,
   pageCount: 0
-})
+});
 
 export default (state = defaultState, action) => {
   switch (action.type) {

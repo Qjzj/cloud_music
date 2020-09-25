@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useContext} from 'react';
 import {connect} from 'react-redux'
 import Horizon from '../../baseUI/horizon-item'
 import {categoryTypes, alphaTypes} from '../../api/config'
@@ -16,28 +16,31 @@ import {
 } from './store/actions'
 import Loading from '../../components/loading'
 import LazyLoad, {forceCheck} from 'react-lazyload'
+import {CategoryDataContext, CHANGE_ALPHA, CHANGE_CATEGORY, Data} from './data'
 
 
 
 function Singers (props) {
 
-  const [category, setCategory] = useState('');
-  const [alpha, setAlpha] = useState('');
+  const {data, dispatch} = useContext(CategoryDataContext);
+
+  const {category, alpha} = data.toJS();
+
   const {updateDispatch, getHotSingerDispatch, pullUpRefreshDispatch, pullDownRefreshDispatch} = props;
   const {singerList, enterLoading, pullUpLoading, pullDownLoading, pageCount} = props;
 
   useEffect(() => {
-    getHotSingerDispatch();
+    if(!singerList.length) {
+      getHotSingerDispatch();
+    }
     // eslint-disable-next-line
   }, []);
-
-
 
   const renderSignerList = () => (
     <List>
       {
         singerList.map(singer => (
-          <ListItem key={singer['accountId']}>
+          <ListItem key={singer['id']}>
             <div className="img_wrapper">
               <LazyLoad placeholder={<img width="100%" height="100%" src={require ('../../components/list/music.jpg')} alt="music"/>}>
                 <img src={`${singer['picUrl']}?param=300*300`} width="100%" height="100%" alt="singer"/>
@@ -52,14 +55,14 @@ function Singers (props) {
 
 
   const handleCategory = (val) => {
-    setCategory(val);
+    dispatch({type: CHANGE_CATEGORY, data: val});
     updateDispatch(val, alpha);
-  }
+  };
 
   const handleAlpha = (val) => {
-    setAlpha(val);
+    dispatch({type: CHANGE_ALPHA, data: val});
     updateDispatch(category, val);
-  }
+  };
 
   const handlePullUp = () => {
     pullUpRefreshDispatch (category, alpha, category === '', pageCount);
@@ -72,24 +75,24 @@ function Singers (props) {
 
   return (
     <div>
-      <NavContainer>
-        <Horizon list={categoryTypes} title={"分类 (默认热门):"} oldVal={category} handleClick={(val) => handleCategory(val) } />
-        <Horizon list={alphaTypes} title={"首字母:"} oldVal = {alpha} handleClick={(val) => handleAlpha(val)} />
-      </NavContainer>
-      <ListContainer>
-        <Scroll
-          pullUp={handlePullUp}
-          pullDown={handlePullDown}
-          pullUpLoading={pullUpLoading}
-          pullDownLoading={pullDownLoading}
-          onScroll={forceCheck}
-        >
-          {
-            renderSignerList()
-          }
-        </Scroll>
-        <Loading show={enterLoading} />
-      </ListContainer>
+        <NavContainer>
+          <Horizon list={categoryTypes} title={"分类 (默认热门):"} oldVal={category} handleClick={(val) => handleCategory(val) } />
+          <Horizon list={alphaTypes} title={"首字母:"} oldVal = {alpha} handleClick={(val) => handleAlpha(val)} />
+        </NavContainer>
+        <ListContainer>
+          <Scroll
+            pullUp={handlePullUp}
+            pullDown={handlePullDown}
+            pullUpLoading={pullUpLoading}
+            pullDownLoading={pullDownLoading}
+            onScroll={forceCheck}
+          >
+            {
+              renderSignerList()
+            }
+          </Scroll>
+          <Loading show={enterLoading} />
+        </ListContainer>
     </div>
   )
 }

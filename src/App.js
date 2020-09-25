@@ -5,15 +5,17 @@ import { renderRoutes } from 'react-router-config';
 import { HashRouter } from 'react-router-dom';
 import routes from './routes'
 import store from './store/index'
-// import {TMallIconStyle} from './assets/fonts/TMall/t-mall'
+import {Data} from './application/Singers/data'
 require('./assets/fonts/TMall/iconfont.css');
 
 function App() {
   return (
     <Provider store={store}>
       <HashRouter>
-        <GlobalStyle></GlobalStyle>
-        {renderRoutes(routes)}
+        <GlobalStyle />
+        <Data>
+          {renderRoutes(routes)}
+        </Data>
       </HashRouter>
     </Provider>
   );
