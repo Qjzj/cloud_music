@@ -3,7 +3,7 @@
  * @date 2020--22 16:28
  * @desc index.js
  */
-import React, {useState, useRef, useEffect, memo} from 'react'
+import React, {useRef, useEffect, memo} from 'react'
 import styled from 'styled-components'
 import Scroll from '../scroll'
 import {PropTypes} from 'prop-types'

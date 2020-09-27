@@ -4,7 +4,7 @@
  * @desc actions.js
  */
 import * as actionTypes from './constants'
-import {fromJS} from "immutable";
+// import {fromJS} from "immutable";
 import {
   getSingerListRequest,
   getHotSingerListRequest,

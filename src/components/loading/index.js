@@ -15,7 +15,8 @@ const loading = keyframes`
   50% {
     transform: scale(1.0);
   }
-`
+`;
+
 const LoadingWrapper = styled.div`
   >div {
     position: fixed;
@@ -29,13 +30,13 @@ const LoadingWrapper = styled.div`
     height: 60px;
     opacity: 0.6;
     border-radius: 50%;
-    background-color: ${style ["theme-color"]};
+    background-color: ${style["theme-color"]};
     animation: ${loading} 1.4s infinite ease-in;
   }
   >div:nth-child (2) {
     animation-delay: -0.7s;
   }
-`
+`;
 
 function Loading (props)  {
   const { show } = props;
