@@ -17,6 +17,7 @@ import {
 import Loading from '../../components/loading'
 import LazyLoad, {forceCheck} from 'react-lazyload'
 import {CategoryDataContext, CHANGE_ALPHA, CHANGE_CATEGORY, Data} from './data'
+import {renderRoutes} from "react-router-config";
 
 
 
@@ -36,14 +37,18 @@ function Singers (props) {
     // eslint-disable-next-line
   }, []);
 
+  const enterDetail = (id) => {
+    props.history.push(`/singers/${id}`);
+  };
+
   const renderSignerList = () => (
     <List>
       {
         singerList.map(singer => (
-          <ListItem key={singer['id']}>
+          <ListItem key={singer['id']} onClick={() => enterDetail(singer.id)}>
             <div className="img_wrapper">
               <LazyLoad placeholder={<img width="100%" height="100%" src={require ('../../components/list/music.jpg')} alt="music"/>}>
-                <img src={`${singer['picUrl']}?param=300*300`} width="100%" height="100%" alt="singer"/>
+                <img src={`${singer['picUrl']}?imageView=1&type=webp&thumbnail=60x0`} width="100%" height="100%" alt="singer"/>
               </LazyLoad>
             </div>
             <span className="name">{singer['name']}</span>
@@ -92,6 +97,9 @@ function Singers (props) {
             }
           </Scroll>
           <Loading show={enterLoading} />
+          {
+            renderRoutes(props.route.routes)
+          }
         </ListContainer>
     </div>
   )

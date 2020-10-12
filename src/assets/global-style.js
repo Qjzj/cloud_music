@@ -18,7 +18,7 @@ const noWrap = () => {
     overflow: hidden;
     white-space: nowrap;
    `
-}
+};
 
 export default {
   'theme-color': '#d44439',

@@ -44,7 +44,7 @@ function Home (props) {
             <ListItem
               key={item['id']}
               tracks={item['tracks']}
-              onClick={() => enterDetail(item['name'])}
+              onClick={() => enterDetail(item['id'])}
             >
               <div className="img_wrapper">
                 <img src={item['coverImgUrl']} alt=""/>
@@ -59,8 +59,9 @@ function Home (props) {
     )
   };
 
-  const enterDetail = (name) => {
-
+  const enterDetail = (id) => {
+    console.log(id);
+    props.history.push(`/rank/${id}`);
   };
 
   const displayStyle = enterLoading ? {"display": "none"} : {display: ''};

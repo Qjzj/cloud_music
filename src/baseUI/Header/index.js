@@ -7,16 +7,17 @@ import React from 'react'
 import styled from 'styled-components'
 import style from '../../assets/global-style'
 import PropTypes from 'prop-types'
+import {HEADER_HEIGHT} from "../../config/config";
 
 const HeaderContainer = styled.div`
   position: fixed;
   top: 0;
   padding: 0 10px 5px;
   width:100%;
-  height: 40px;
+  height: ${HEADER_HEIGHT}px;
   z-index: 100;
   display: flex;
-  line-height: 40px;
+  line-height: ${HEADER_HEIGHT}px;
   color: ${style['font-color-light']};
   
   .back {
