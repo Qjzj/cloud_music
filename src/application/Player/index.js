@@ -5,7 +5,7 @@
  */
 import React, {useRef, useState, useEffect} from 'react'
 import {connect} from 'react-redux'
-
+import useDeepCompareEffect from 'use-deep-compare-effect'
 import {
   changePlayingState,
   changeShowPlayList,
@@ -19,117 +19,50 @@ import {
 
 import MiniPlayer from './miniPlayer'
 import NormalPlayer from './normalPlayer'
-import {getSongUrl, isEmpty} from "../../util";
-
-/*const currentSong = {
-  al: { picUrl: "https://p1.music.126.net/JL_id1CFwNJpzgrXwemh4Q==/109951164172892390.jpg" },
-  name: "木偶人",
-  ar: [{name: "薛之谦"}]
-};*/
-
-const playList = [
-  {
-    ftype: 0,
-    djId: 0,
-    a: null,
-    cd: '01',
-    crbt: null,
-    no: 1,
-    st: 0,
-    rt: '',
-    cf: '',
-    alia: [
-      '手游《梦幻花园》苏州园林版推广曲'
-    ],
-    rtUrls: [],
-    fee: 0,
-    s_id: 0,
-    copyright: 0,
-    h: {
-      br: 320000,
-      fid: 0,
-      size: 9400365,
-      vd: -45814
-    },
-    mv: 0,
-    al: {
-      id: 84991301,
-      name: '拾梦纪',
-      picUrl: 'http://p1.music.126.net/M19SOoRMkcHmJvmGflXjXQ==/109951164627180052.jpg',
-      tns: [],
-      pic_str: '109951164627180052',
-      pic: 109951164627180050
-    },
-    name: '拾梦纪',
-    l: {
-      br: 128000,
-      fid: 0,
-      size: 3760173,
-      vd: -41672
-    },
-    rtype: 0,
-    m: {
-      br: 192000,
-      fid: 0,
-      size: 5640237,
-      vd: -43277
-    },
-    cp: 1416668,
-    mark: 0,
-    rtUrl: null,
-    mst: 9,
-    dt: 234947,
-    ar: [
-      {
-        id: 12084589,
-        name: '妖扬',
-        tns: [],
-        alias: []
-      },
-      {
-        id: 12578371,
-        name: '金天',
-        tns: [],
-        alias: []
-      }
-    ],
-    pop: 5,
-    pst: 0,
-    t: 0,
-    v: 3,
-    id: 1416767593,
-    publishTime: 0,
-    rurl: null
-  }
-];
+import Toast from '../../baseUI/Toast'
+import {playMode} from "../../config/config";
+import {getSongUrl, isEmpty, findIndex, shuffle} from "../../util";
 
 /**
  * @return {null}
  */
 function Player(props) {
-  const {fullScreen, playing, currentIndex, currentSong: immutableCurrentSong} = props;
-  const {toggleFullScreenDispatch, togglePlayingDispatch, changeCurrentIndexDispatch, changeCurrentSongDispatch} = props;
+  const {fullScreen, playing, currentIndex, currentSong: immutableCurrentSong, mode, sequencePlayList: immutableSequencePlayList, playList: immutablePlayList} = props;
+  const {toggleFullScreenDispatch, togglePlayingDispatch, changeCurrentIndexDispatch, changeCurrentSongDispatch, changeModeDispatch, changePlayListDispatch} = props;
 
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [preSong, setPreSong] = useState({});
+  const [modeText, setModeText] = useState('');
 
-  let percent = isNaN(currentTime / duration) ? 0 : currentTime / duration;
-  let currentSong = immutableCurrentSong.toJS();
+  const percent = isNaN(currentTime / duration) ? 0 : currentTime / duration;
+  const currentSong = immutableCurrentSong.toJS();
+  const playList = immutablePlayList.toJS();
+  const sequencePlayList = immutableSequencePlayList.toJS();
 
   const audioRef = useRef();
+  const toastRef = useRef();
 
   useEffect(() => {
-    if (!isEmpty(currentSong)) return;
-    // currentIndex 默认为 -1  临时修改为 0
     changeCurrentIndexDispatch(0);
-    let current = playList[0];
+  }, []);
+
+  useDeepCompareEffect(() => {
+    if (
+      !playList.length ||
+      currentIndex === -1 ||
+      !playList[currentIndex] ||
+      playList[currentIndex].id === preSong.id
+    ) return;
+
+    let current = playList[currentIndex];
     changeCurrentSongDispatch(current);
-    console.log(audioRef);
     audioRef.current.src = getSongUrl(current.id);
 
     setTimeout(() => {
       audioRef.current.play();
     });
+    // console.log(currentSong);
 
     // 修改播放状态
     togglePlayingDispatch(true);
@@ -137,15 +70,93 @@ function Player(props) {
     setCurrentTime(0);
     setDuration((current.dt / 1000) | 0);
 
-  }, []);
+  }, [playList, currentIndex]);
+
+  useEffect(() => {
+    // console.log('**', audioRef.current, playing);
+    playing ? audioRef.current.play() : audioRef.current.pause();
+  }, [playing]);
 
   const clickPlaying = (e, state) => {
     e.stopPropagation();
     togglePlayingDispatch(state);
   };
 
-  console.log('&&&&&&&', isEmpty(currentSong));
+  // 播放歌曲过程中 更新播放时间
+  const updateTime = e => {
+    setCurrentTime(e.target.currentTime);
+  };
 
+  // 进度条改变
+  const onProgressChange = curPercent => {
+    const newTime = curPercent * duration;
+    setCurrentTime(newTime)
+    audioRef.current.currentTime = newTime;
+    if (!playing) {
+      togglePlayingDispatch(true);
+    }
+  };
+
+  // 循环
+  const handleLoop = () => {
+    audioRef.current.currentTime = 0;
+    changePlayingState(true);
+    // console.log('*', audioRef.current);
+    audioRef.current.play();
+  };
+
+  // 上一曲
+  const handlePrev = () => {
+    if (playList.length === 1) {
+      handleLoop();
+      return;
+    }
+    let index = currentIndex - 1;
+    if (index < 0) index = playList.length - 1;
+    if (!playing) togglePlayingDispatch(true);
+    changeCurrentIndexDispatch(index);
+  };
+
+  // 下一曲
+  const handleNext = () => {
+    if (playList.length === 1) {
+      handleLoop();
+      return;
+    }
+    let index = currentIndex + 1;
+    if (index === playList.length - 1) index = 0;
+    if (!playing) togglePlayingDispatch(true);
+    changeCurrentIndexDispatch(index);
+  };
+
+  // 修改播放模式
+  const changeMode = () => {
+    let newMode = (mode + 1) % 3;
+    if (newMode === playMode.sequence) {
+      // 顺序播放
+      changePlayListDispatch(sequencePlayList);
+      let index = findIndex(currentSong, sequencePlayList);
+      changeCurrentIndexDispatch(index);
+      setModeText('顺序播放');
+    } else if (newMode === playMode.loop) {
+      // 单曲循环
+      changePlayListDispatch([currentSong]);
+      setModeText("单曲循环");
+    } else if (newMode === playMode.random) {
+      // 随机播放
+      let newList = shuffle(sequencePlayList);
+      let index = findIndex(currentSong, newList);
+      changePlayListDispatch(newList);
+      changeCurrentIndexDispatch(index);
+      setModeText("随机播放");
+    }
+    changeModeDispatch(newMode);
+    toastRef.current.show();
+  };
+
+  const handleEnd = () => {
+    handleNext();
+  };
 
   return (
     <div>
@@ -165,13 +176,21 @@ function Player(props) {
           song={currentSong}
           fullScreen={fullScreen}
           playing={playing}
-          percent={percent}
+          percent={percent}  // 进度
+          duration={duration}   // 总时长
+          currentTime={currentTime}  // 播放时间
           toggleFullScreen={toggleFullScreenDispatch}
           clickPlaying={clickPlaying}
+          onProgressChange={onProgressChange}
+          handlePrev={handlePrev}
+          handleNext={handleNext}
+          mode={mode}
+          changeMode={changeMode}
         />
       }
 
-      <audio ref={audioRef}/>
+      <audio ref={audioRef} onTimeUpdate={updateTime} onEnded={handleEnd}/>
+      <Toast text={modeText} ref={toastRef} />
     </div>
   )
 }

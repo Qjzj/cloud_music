@@ -2,12 +2,12 @@ export const getCount = (count) => {
   if (count < 0) return;
   if (count < 10000) {
     return count;
-  } else if (Math.floor (count / 10000) < 10000) {
-    return Math.floor (count/1000)/10 + "万";
-  } else  {
-    return Math.floor (count / 10000000)/ 10 + "亿";
+  } else if (Math.floor(count / 10000) < 10000) {
+    return Math.floor(count / 1000) / 10 + "万";
+  } else {
+    return Math.floor(count / 10000000) / 10 + "亿";
   }
-}
+};
 
 export const debounce = (func, delay) => {
   let timer;
@@ -75,4 +75,33 @@ export const isEmpty = data => {
   }else {
     return !! data;
   }
-}
+};
+
+export const formatPlayTime = (interval) => {
+  interval = interval | 0;
+  const minute = (interval / 60) | 0;
+  const second = (interval % 60).toString().padStart(2, '0');
+  return `${minute}:${second}`
+};
+
+export const getRandomInt = (min, max) => {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+};
+
+export const shuffle = (arr) => {
+  let newArr = [];
+  arr.forEach(item => {
+    newArr.push(item)
+  });
+  for(let i=0; i<newArr.length; i++) {
+    let j = getRandomInt(0, i);
+    let t = newArr[j];
+    newArr[i] = newArr[j];
+    newArr[j] = t;
+  }
+  return newArr;
+};
+
+export const findIndex = (song, list) => {
+  return list.findIndex(item => song.id === item.id);
+};

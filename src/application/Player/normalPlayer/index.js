@@ -16,7 +16,7 @@ import {
   CDWrapper,
   ProgressWrapper
 } from './style'
-import {prefixStyle} from "../../../util";
+import {prefixStyle, formatPlayTime} from "../../../util";
 import ProgressBar from '../../../baseUI/progress-bar'
 
 const _getPosAndScale = () => {
@@ -38,8 +38,8 @@ const _getPosAndScale = () => {
 const transform = prefixStyle('transform');
 
 function NormalPlayer(props) {
-  const {song, fullScreen, percent} = props;
-  const {toggleFullScreen} = props;
+  const {song, fullScreen, percent, playing, currentTime, duration, mode} = props;
+  const {toggleFullScreen, clickPlaying, onProgressChange, handlePrev, handleNext, changeMode} = props;
 
   const normalPlayerRef = useRef();
   const cdWrapperRef = useRef();
@@ -93,8 +93,17 @@ function NormalPlayer(props) {
     normalPlayerRef.current.style.display = "none";
   };
 
-  const percentChange = (percent) => {
-    console.log('percent', percent);
+  const getModeIconName = (mode) => {
+    switch(mode) {
+      case 0:
+        return 'icon-loop';
+      case 1:
+        return 'icon-singlecycle';
+      case 2:
+        return 'icon-random';
+      default:
+        return 'icon-loop';
+    }
   };
 
   return (
@@ -128,30 +137,42 @@ function NormalPlayer(props) {
         <Middle ref={cdWrapperRef}>
           <CDWrapper>
             <div className="cd">
-              <img src={song.al.picUrl + "?imageView&thumbnail=360y360&quality=75&tostatic=0"} alt="" className="image play"/>
+              <img
+                className={`image ${playing ? '' : 'pause'}`}
+                src={song.al.picUrl + "?imageView&thumbnail=360y360&quality=75&tostatic=0"}
+                alt=""
+              />
             </div>
           </CDWrapper>
         </Middle>
         <Bottom className="bottom">
           <ProgressWrapper>
-            <span className="time time-l">0:00</span>
+            <span className="time time-l">{formatPlayTime(currentTime)}</span>
             <div className="progress-bar-wrapper">
-              <ProgressBar percent={percent} percentChange={percentChange} />
+              <ProgressBar
+                percent={percent}
+                percentChange={onProgressChange}
+              />
             </div>
-            <span className="time time-r">4:17</span>
+            <span className="time time-r">{formatPlayTime(duration)}</span>
           </ProgressWrapper>
           <Operators>
             <div className="icon i-left">
-              <i className="iconfont icon-loop"/>
+              <i className={`iconfont ${getModeIconName(mode)}`} onClick={changeMode}/>
             </div>
             <div className="icon i-left">
-              <i className="iconfont icon-previous"/>
+              <i className="iconfont icon-previous" onClick={handlePrev} />
             </div>
             <div className="icon i-center">
-              <i className="iconfont icon-play"/>
+              {
+                playing ?
+                  <i className="iconfont icon-play" onClick={e => clickPlaying(e, false)}/>
+                  :
+                  <i className="iconfont icon-timeout" onClick={e => clickPlaying(e, true)}/>
+              }
             </div>
             <div className="icon i-right">
-              <i className="iconfont icon-nextsong"/>
+              <i className="iconfont icon-nextsong" onClick={handleNext}/>
             </div>
             <div className="icon i-right">
               <i className="iconfont icon-musiclist"/>
