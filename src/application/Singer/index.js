@@ -13,6 +13,7 @@ import SongsList from '../SongList'
 import Loading from '../../components/loading'
 import {HEADER_HEIGHT} from "../../config/config";
 import {changeEnterLoading, getSingerInfo} from "./store/actions";
+import MusicNote from '../../baseUI/music-note'
 
 
 function Singer(props) {
@@ -33,6 +34,7 @@ function Singer(props) {
   const songScroll = useRef();
   const header = useRef();
   const layer = useRef();
+  const musicNoteRef = useRef();
 
   // 图片初始高度
   let initialHeight = 0;
@@ -93,6 +95,10 @@ function Singer(props) {
     }
   }, []);
 
+  const musicAnimation = (x, y) => {
+    musicNoteRef.current.startAnimation({x, y});
+  };
+
   return (
     <CSSTransition
       in={showStatus}
@@ -117,10 +123,12 @@ function Singer(props) {
             <SongsList
               songs={songs}
               showCollect={false}
+              musicAnimation={musicAnimation}
             />
           </Scroll>
         </SongListWrapper>
         {loading ? <Loading /> : null}
+        <MusicNote ref={musicNoteRef}/>
       </Container>
 
     </CSSTransition>

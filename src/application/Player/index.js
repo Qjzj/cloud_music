@@ -43,9 +43,6 @@ function Player(props) {
   const audioRef = useRef();
   const toastRef = useRef();
 
-  useEffect(() => {
-    changeCurrentIndexDispatch(0);
-  }, []);
 
   useDeepCompareEffect(() => {
     if (
@@ -56,6 +53,7 @@ function Player(props) {
     ) return;
 
     let current = playList[currentIndex];
+    setPreSong(current);
     changeCurrentSongDispatch(current);
     audioRef.current.src = getSongUrl(current.id);
 

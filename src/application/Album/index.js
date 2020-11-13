@@ -14,6 +14,7 @@ import {getName} from "../../util";
 import style from '../../assets/global-style'
 import {getAlbumDetail, changeEnterLoading} from "./store/actions";
 import Loading from '../../components/loading'
+import MusicNote from '../../baseUI/music-note'
 
 const HEADER_HEIGHT = 45;
 
@@ -27,11 +28,12 @@ function Album(props) {
 
   const currentAlbum = currentAlbumImmutable.toJS();
 
+  const headerEl = useRef();
+  const musicNoteRef = useRef();
+
   useEffect(() => {
     getAlbumDataDispatch(id);
   }, [])
-
-  const headerEl = useRef();
 
   const handleBack = useCallback(() => {
       setShowStatus (false);
@@ -54,6 +56,10 @@ function Album(props) {
     }
 
   }, [currentAlbum]);
+
+  const musicAnimation = (x, y) => {
+    musicNoteRef.current.startAnimation({x, y});
+  }
 
   const renderTopDesc = () => (
     <TopDesc background={currentAlbum.coverImgUrl}>
@@ -165,6 +171,7 @@ function Album(props) {
         {
           enterLoading && <Loading />
         }
+        <MusicNote ref={musicNoteRef} />
       </Container>
     </CSSTransition>
   )
